@@ -51,10 +51,10 @@ module.exports = {
         // remove from back
         pop: function () {
             if (this.back) {
-                this.length--;
-                this.back.prev.next = null;
                 var node = this.back;
-                this.back = null;
+                this.length--;
+                this.back = this.back.prev;
+                this.back.next = null;
                 return node.detach();
             } else {
                 return null;
@@ -79,10 +79,10 @@ module.exports = {
         // remove from front
         shift: function () {
             if (this.front) {
-                this.length--;
-                this.front.next.prev = null;
                 var node = this.front;
-                this.front = null;
+                this.length--;
+                this.front = this.front.next;
+                this.front.prev = null;
                 return node.detach();
             } else {
                 return null;
