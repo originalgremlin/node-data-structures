@@ -42,13 +42,13 @@ var Heap = Class.extend({
 
     // create a heap out of given array of elements
     heapify: function (data) {
-        this.data.forEach(this.add);
+        this.data.forEach(this.insert);
         return this;
     },
 
     // joining two heaps to form a valid new heap containing all the elements of both
     merge: function (other) {
-        this.other.each(this.add);
+        this.other.each(this.insert);
         return this;
     },
 
@@ -62,12 +62,12 @@ var Heap = Class.extend({
 
     // add a new key to the heap
     // { key: 'key', value: 'value' }
-    add: function (node) {
+    insert: function (node) {
         if (this.size >= this.length)
             this._grow();
         this.size++;
         this.heap[this.size] = node;
-        this.sift(this.size);
+        this.siftUp(this.size);
         return this;
     },
 
@@ -110,7 +110,7 @@ var Heap = Class.extend({
         var node = this.heap[0];
         this._swap(0, this.size);
         this.size--;
-        this.sift(0);
+        this.siftDown(0);
         if (this.size < this.length / Heap.RESIZE_SCALE)
             this._shrink();
         return node;
