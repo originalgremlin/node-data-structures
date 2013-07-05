@@ -31,6 +31,7 @@ var Heap = Class.extend({
             newlen = Math.ceil(oldlen / Heap.RESIZE_SCALE);
         if (newlen > this.size)
             this.length = this.heap.length = newlen;
+        return this;
     },
 
     // apply a callback to all elements in the array
@@ -122,6 +123,7 @@ var Heap = Class.extend({
         var tmp = this.heap[i1];
         this.heap[i1] = this.heap[i2];
         this.heap[i2] = tmp;
+        return this;
     },
 
     sift: function (index) {
