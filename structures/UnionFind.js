@@ -10,10 +10,11 @@ module.exports = Class.extend({
         }
         this.id = id;
         this.size = size;
+        this.count = n;
     },
 
     // find root while performing path compression
-    _root: function (i) {
+    find: function (i) {
         var id = this.id;
         while (i !== id[i]) {
             id[i] = id[id[i]];
@@ -23,7 +24,7 @@ module.exports = Class.extend({
     },
 
     connected: function (p, q) {
-        return this._root(p) === this._root(q);
+        return this.find(p) === this.find(q);
     },
 
     // quick union
@@ -32,16 +33,20 @@ module.exports = Class.extend({
     union: function (p, q) {
         var id = this.id,
             size = this.size,
-            i = this._root(p),
-            j = this._root(q);
-        if (size[i] < size[j]) {
+            i = this.find(p),
+            j = this.find(q);
+        if (i === j) {
+            return;
+        } else if (size[i] < size[j]) {
             id[i] = j;
             size[j] += size[i];
             size[i] = 0;
+            count--;
         } else {
             id[j] = i;
             size[i] += size[j];
             size[j] = 0;
+            count--;
         }
     },
 

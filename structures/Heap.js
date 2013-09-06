@@ -1,8 +1,6 @@
 var Class = require('uberclass');
 
 // http://en.wikipedia.org/wiki/Heap_(data_structure)
-
-
 // abstract base class for heaps
 var Heap = Class.extend({
     INITIAL_SIZE: 64,
