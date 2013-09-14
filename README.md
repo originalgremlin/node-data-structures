@@ -10,10 +10,13 @@ Implemented:
 In progress:
     Linked list
 
-
 Planned:
     Stack
     Queue
     Deque
-    Heap
+    Binary Heap
+    Binomial Heap
+    Fibonacci Heap
+    Brodal Queue
     Binary Tree
+    Trie

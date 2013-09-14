@@ -3,44 +3,37 @@ var Class = require('uberclass');
 // http://en.wikipedia.org/wiki/Heap_(data_structure)
 // abstract base class for heaps
 var Heap = Class.extend({
-    INITIAL_SIZE: 64,
     RESIZE_SCALE: 2,
+
+    // efficiently create a heap out of given array of elements
+    heapify: function (nodes, comparator) {
+        var h = new this(comparator);
+        h.heap = nodes;
+        h.size = nodes.length;
+        for (var i = Math.floor(h.size / 2); i >= 0; i--)
+            h.siftDown(i);
+        return h;
+    },
 
     nodify: function (key, value) {
         return { key: key, value: value };
     }
 },  {
     // create an empty heap
-    init: function (size, comparator) {
-        this.heap = new Array(size || Heap.INITIAL_SIZE);
+    init: function (comparator) {
+        this.heap = [];
         this.size = 0;
         this.comparator = comparator || function (pVal, cVal) { return pVal <= cVal; };  // default to min-heap
     },
 
-    // resize the underlying array
-    _grow: function () {
-        var oldlen = this.heap.length,
-            newlen = oldlen * Heap.RESIZE_SCALE;
-        this.length = this.heap.length = newlen;
-    },
-
-    _shrink: function () {
-        var oldlen = this.heap.length,
-            newlen = Math.ceil(oldlen / Heap.RESIZE_SCALE);
-        if (newlen > this.size)
-            this.length = this.heap.length = newlen;
+    getSize: function () {
+        return this.size;
     },
 
     // apply a callback to all elements in the array
     // NOTE: does not necessarily walk the heap in heap order
-    each: function (callback) {
+    forEach: function (callback) {
         this.heap.forEach(callback);
-        return this;
-    },
-
-    // create a heap out of given array of elements
-    heapify: function (data) {
-        this.data.forEach(this.insert);
         return this;
     },
 
@@ -59,43 +52,41 @@ var Heap = Class.extend({
     },
 
     // add a new key to the heap
-    // { key: 'key', value: 'value' }
-    insert: function (node) {
-        if (this.size >= this.length)
-            this._grow();
+    insert: function (key, value) {
+        // resize heap
+        var length = this.heap.length;
+        if (this.size >= length)
+            this.heap.length = (length > 0) ? (length * Heap.RESIZE_SCALE) : 1;
+        // insert node
+        this.heap[this.size] = Heap.nodify(key, value);
         this.size++;
-        this.heap[this.size] = node;
-        this.siftUp(this.size);
+        // restore the heap property
+        this.siftUp(this.size - 1);
         return this;
     },
 
-    // remove an arbitrary node
+    // delete a node from the heap
+    // WARNING: O(n) time (for find operation)
     remove: function (key) {
         for (var i = 0; i < this.size; i++) {
-            if (this.heap[i] === key) {
-                var found = this.heap[i];
-                this._swap(i, this.size);
-                this.size--;
-                this.sift(i);
-                if (this.size < this.length / Heap.RESIZE_SCALE)
-                    this._shrink();
-                return found;
-            }
-        }
+            if (this.heap[i].key === key) {
+                return this.removeAt(i);
         return null;
     },
 
-    // update a key with a new value
-    update: function (node) {
-        for (var i = 0; i < this.size; i++) {
-            if (this.heap[i].key === key) {
-                var found = this.heap[i];
-                found.value = node.value;
-                this.sift(i);
-                return found;
-            }
-        }
-        return null;
+    removeAt: function (index) {
+        // resize heap
+        var length = this.heap.length;
+        if (length >= this.size * Heap.RESIZE_SCALE * 2)
+            this.heap.length = Math.ceil(length / Heap.RESIZE_SCALE);
+        this.size--;
+        // remove node
+        var node = this.heap[index];
+        this._swap(index, this.size);
+        this.heap[this.size] = null;
+        // restore the heap property
+        this.siftDown(index);
+        return node;
     },
 
     // view the root node
@@ -105,13 +96,7 @@ var Heap = Class.extend({
 
     // removing the root node
     pop: function () {
-        var node = this.heap[0];
-        this._swap(0, this.size);
-        this.size--;
-        this.siftDown(0);
-        if (this.size < this.length / Heap.RESIZE_SCALE)
-            this._shrink();
-        return node;
+        return this.removeAt(0);
     },
 
     // methods for maintaining the heap property
@@ -120,13 +105,6 @@ var Heap = Class.extend({
         var tmp = this.heap[i1];
         this.heap[i1] = this.heap[i2];
         this.heap[i2] = tmp;
-    },
-
-    sift: function (index) {
-        var pVal = this.heap[Math.floor(index / 2)].value,
-            cVal = this.heap[index].value,
-            methodName = this.comparator(pVal, cVal) ? 'siftDown' : 'siftUp';
-        return this[methodName](index);
     },
 
     siftUp: function (index) {
@@ -139,13 +117,28 @@ var Heap = Class.extend({
 });
 
 module.exports = {
+    // https://en.wikipedia.org/wiki/Binary_heap
     BinaryHeap: Heap.extend({
-        siftUp: function (index) {
-
+        siftUp: function (cIndex) {
+            var pIndex = Math.floor(cIndex / 2);
+            if (!this.comparator(this.heap[pIndex].value, this.heap[cIndex].value)) {
+                this._swap(pIndex, cIndex);
+                this.siftUp(pIndex);
+            }
         },
 
-        siftDown: function (index) {
-
+        siftDown: function (pIndex) {
+            var largest = pIndex,
+                c1Index = pIndex * 2,
+                c2Index = pIndex * 2 + 1;
+            if (c1Index < this.size && !this.comparator(this.heap[largest].value, this.heap[c1Index].value))
+                largest = c1Index;
+            if (c2Index < this.size && !this.comparator(this.heap[largest].value, this.heap[c2Index].value))
+                largest = c2Index;
+            if (largest !== pIndex) {
+                this._swap(pIndex, largest);
+                this.siftDown(largest);
+            }
         }
     })
 };
