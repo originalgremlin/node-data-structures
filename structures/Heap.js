@@ -11,10 +11,10 @@ var Heap = Class.extend({
     }
 },  {
     // create an empty heap
-    init: function (size, comparator) {
+    init: function (size, compareTo) {
         this.heap = new Array(size || Heap.INITIAL_SIZE);
         this.size = 0;
-        this.comparator = comparator || function (pVal, cVal) { return pVal <= cVal; };  // default to min-heap
+        this.compareTo = compareTo || function (pVal, cVal) { return pVal <= cVal; };  // default to min-heap
     },
 
     // resize the underlying array
@@ -125,7 +125,7 @@ var Heap = Class.extend({
     sift: function (index) {
         var pVal = this.heap[Math.floor(index / 2)].value,
             cVal = this.heap[index].value,
-            methodName = this.comparator(pVal, cVal) ? 'siftDown' : 'siftUp';
+            methodName = this.compareTo(pVal, cVal) ? 'siftDown' : 'siftUp';
         return this[methodName](index);
     },
 
